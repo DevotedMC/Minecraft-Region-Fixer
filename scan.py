@@ -574,7 +574,15 @@ def scan_player(player_name, scanned_dat_file):
 #        enchanted_book_count = 0
         inventory = findTag(player_dat, 'Inventory')
         if inventory:
-            inventory_summary = recordInventory(player_name + ':', inventory)
+            px = findTag(player_dat, 'SpawnX')
+            py = findTag(player_dat, 'SpawnY')
+            pz = findTag(player_dat, 'SpawnZ')
+            qq = [player_name]
+            if px:
+                qq.append(' [{0},{1},{2}]:'.format(px.value, py.value, pz.value))
+            else:
+                qq.append(':')
+            inventory_summary = recordInventory(''.join(qq), inventory)
 #            for item in inventory.tags:
 #                enchants = None
 #                item_id = findTag(item, 'id')
