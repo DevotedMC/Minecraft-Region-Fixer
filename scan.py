@@ -589,6 +589,9 @@ def scan_player(player_name, scanned_dat_file):
             py = findTag(player_dat, 'SpawnY')
             pz = findTag(player_dat, 'SpawnZ')
             qq = [player_name]
+            qc = findTag(player_dat, 'CustomName')
+            if qc:
+                qq.append(' [{0}] '.format(qc.value))
             if px:
                 qq.append(' [{0},{1},{2}]:'.format(px.value, py.value, pz.value))
             else:
