@@ -562,6 +562,17 @@ def scan_world(world_obj, options):
                 scan_regionset(r, options)
     w.scanned = True
 
+def scan_playerfile(scan_dat_file):
+    """ Reads a .dat player file and returns the NBT data as a pretty string """
+
+    s = scan_dat_file
+    player_summary = ''
+    try:
+        player_dat = nbt.NBTFile(filename = s)
+        player_summary += player_dat.pretty_tree(0); 
+        return player_summary
+    except Exception, e:
+        return e
 
 def scan_player(player_name, scanned_dat_file):
     """ At the moment only tries to read a .dat player file. It returns

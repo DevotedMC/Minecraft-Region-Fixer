@@ -128,6 +128,20 @@ def parse_chunk_list(chunk_list, world_obj):
 
     return parsed_list
 
+def parse_player_paths(args):
+    """ Parse the list of args passed to outputplayer.py and returns a
+    list of valid player data files. """
+    player_list = []
+    warning = False
+    for arg in args:
+        if arg[-4:] == ".dat":
+            player_list.append(arg)
+        else:
+            if not warning:
+                print "Warning: Output Player only works on .dat files"
+                warning = True
+    return player_list
+
 def parse_paths(args):
     """ Parse the list of args passed to region-fixer.py and returns a 
     RegionSet object with the list of regions and a list of World 
