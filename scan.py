@@ -83,7 +83,7 @@ BIOME_MAP = {
   12      :'Ice Plains',
   140     :'Ice Plains Spikes',
   13      :'Ice Mountains',
-  14      ;'MushroomIsland',
+  14      :'MushroomIsland',
   15      :'MushroomIslandShore',
   16      :'Beach',
   17      :'DesertHills',
@@ -114,7 +114,7 @@ BIOME_MAP = {
   34      :'Extreme Hills+',
   162     :'Extreme Hills+ M',
   35      :'Savanna',
-  163     ;'Savanna M',
+  163     :'Savanna M',
   36      :'Savanna Plateau ',
   164     :'Savanna Plateau M',
   37      :'Mesa',
@@ -749,7 +749,7 @@ def scan_region_file(scanned_regionfile_obj, options):
         # cnx = mysql.connect(user='block_stats', password='', host='localhost', port='3306', database='block_stats')
         block_aggregation = [0] * 4096
         containers = []
-        biomes = []
+        biomes = [0] * 256
         r = scanned_regionfile_obj
         # counters of problems
         chunk_count = 0

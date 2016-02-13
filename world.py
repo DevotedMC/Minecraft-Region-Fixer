@@ -177,7 +177,7 @@ class ScannedRegionFile(object):
         # Information about the region
         self.block_aggregation = [0 for i in xrange(4096)]
         self.containers = []
-        self.biomes = []
+        self.biomes = [0] * 256
 
     def __str__(self):
         text = "Path: {0}".format(self.path)
