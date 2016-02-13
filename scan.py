@@ -60,6 +60,73 @@ DIAMOND_COUNTS = {
     'ENCHANTMENT_TABLE': 2,
   }
 
+BIOME_MAP = {
+  0       :'Ocean',
+  1       :'Plains',
+  128     :'Plains M',
+  129     :'Sunflower Plains',
+  2       :'Desert',
+  130     :'Desert M',
+  3       :'Extreme Hills',
+  131     :'Extreme Hills M',
+  4       :'Forest',
+  132     :'Flower Forest',
+  5       :'Taiga',
+  133     :'Taiga M',
+  6       :'Swampland',
+  134     :'Swampland M',
+  7       :'River',
+  8       :'Hell',
+  9       :'The End',
+  10      :'FrozenOcean',
+  11      :'FrozenRiver',
+  12      :'Ice Plains',
+  140     :'Ice Plains Spikes',
+  13      :'Ice Mountains',
+  14      ;'MushroomIsland',
+  15      :'MushroomIslandShore',
+  16      :'Beach',
+  17      :'DesertHills',
+  18      :'ForestHills',
+  19      :'TaigaHills',
+  20      :'Extreme Hills Edge',
+  21      :'Jungle',
+  149     :'Jungle M',
+  22      :'JungleHills',
+  23      :'JungleEdge',
+  151     :'JungleEdge M',
+  24      :'Deep Ocean',
+  25      :'Stone Beach',
+  26      :'Cold Beach',
+  27      :'Birch Forest',
+  155     :'Birch Forest M',
+  28      :'Birch Forest Hills',
+  156     :'Birch Forest Hills M',
+  29      :'Roofed Forest',
+  157     :'Roofed Forest M',
+  30      :'Cold Taiga',
+  158     :'Cold Taiga M',
+  31      :'Cold Taiga Hills',
+  32      :'Mega Taiga',
+  160     :'Mega Spruce Taiga',
+  33      :'Mega Taiga Hills',
+  161     :'Redwood Taiga Hills M',
+  34      :'Extreme Hills+',
+  162     :'Extreme Hills+ M',
+  35      :'Savanna',
+  163     ;'Savanna M',
+  36      :'Savanna Plateau ',
+  164     :'Savanna Plateau M',
+  37      :'Mesa',
+  165     :'Mesa (Bryce)',
+  38      :'Mesa Plateau F',
+  166     :'Mesa Plateau F M',
+  39      :'Mesa Plateau',
+  167     :'Mesa Plateau M',
+  127     :'The Void[upcoming]'
+  }
+
+
 BLOCK_MAP = {
     0: 'AIR',
     1: 'STONE',
@@ -682,6 +749,7 @@ def scan_region_file(scanned_regionfile_obj, options):
         # cnx = mysql.connect(user='block_stats', password='', host='localhost', port='3306', database='block_stats')
         block_aggregation = [0] * 4096
         containers = []
+        biomes = []
         r = scanned_regionfile_obj
         # counters of problems
         chunk_count = 0
@@ -719,7 +787,7 @@ def scan_region_file(scanned_regionfile_obj, options):
 
                     # start the actual chunk scanning
                     g_coords = r.get_global_chunk_coords(x, z)
-                    chunk, c = scan_chunk(region_file, (x,z), g_coords, o, block_aggregation, containers)
+                    chunk, c = scan_chunk(region_file, (x,z), g_coords, o, block_aggregation, containers, biomes)
                     if c != None: # chunk not created
                         r.chunks[(x,z)] = c
                         chunk_count += 1
@@ -779,6 +847,7 @@ def scan_region_file(scanned_regionfile_obj, options):
         r.status = world.REGION_OK
         r.block_aggregation = block_aggregation
         r.containers = containers
+        r.biomes = biomes
         return r 
 
         # Fatal exceptions:
@@ -806,7 +875,7 @@ def multithread_scan_regionfile(region_file):
 
 
 
-def scan_chunk(region_file, coords, global_coords, options, block_aggregation, containers):
+def scan_chunk(region_file, coords, global_coords, options, block_aggregation, containers, biomes):
     """ Takes a RegionFile obj and the local coordinatesof the chunk as
         inputs, then scans the chunk and returns all the data."""
     try:
@@ -848,6 +917,14 @@ def scan_chunk(region_file, coords, global_coords, options, block_aggregation, c
                 chunk_block_aggregation[0] += 4096
                 block_aggregation[0] += 4096
             real_chunk_data = real_chunk.chunk_data
+            if findTag(real_chunk_data, 'Biomes'):
+                biomeBytes = real_chunk_data['Biomes'].value
+                if isinstance(biomeBytes, (bytearray, array.array)):
+                    for i, biome in enumerate(biomeBytes):
+                        if biome < 0:
+                            biomes[255] += 1;
+                        else:
+                            biomes[biome] += 1;
             if findTag(real_chunk_data, 'Entities'):
                 for entity in findTag(real_chunk_data, 'Entities').tags:
                     container_contents = logContainer(entity)
@@ -889,7 +966,7 @@ def scan_chunk(region_file, coords, global_coords, options, block_aggregation, c
         num_entities = None
 
     except region.ChunkHeaderError as e:
-        error = "Chunk herader error: " + e.msg
+        error = "Chunk header error: " + e.msg
         status = world.CHUNK_CORRUPTED
         status_text = error
         scan_time = time.time()
@@ -959,6 +1036,7 @@ def scan_regionset(regionset, options):
     # printing status
     region_counter = 0
     total_block_aggregation = [0] * 4096
+    total_biome_aggregation = [0] * 256
     container_log_file = open('containers.txt', 'w')
 
     while not result.ready() or not q.empty():
@@ -975,11 +1053,13 @@ def scan_regionset(regionset, options):
                 corrupted, wrong, entities_prob, shared_offset, num_chunks = r.get_counters()
                 filename = r.filename
 
-                block_aggregation, containers = r.get_info_containers()
+                block_aggregation, containers, biomes = r.get_info_containers()
                 for block_id, count in enumerate(block_aggregation):
                     total_block_aggregation[block_id] += count
                 for line in containers:
                     container_log_file.write(line)
+                for biome_id, count in enumerate(biomes):
+                    total_biome_aggregation[biome_id] += count
 
                 # the obj returned is a copy, overwrite it in regionset
                 regionset[r.get_coords()] = r
@@ -1011,6 +1091,13 @@ def scan_regionset(regionset, options):
                 print '{0}: {1}'.format(BLOCK_MAP[block_id], count)
             else:
                 print '{0}: {1}'.format(block_id, count)
+    print 'BIOMES'
+    for biome_id, count in enumerate(total_biome_aggregation):
+        if count:
+            if biome_id in BIOME_MAP:
+                print '{0}: {1}'.format(BIOME_MAP[biome_id], count)
+            else:
+                print '{0}: {1}'.format(biome_id, count)
     if not options.verbose: pbar.finish()
 
     regionset.scanned = True

@@ -177,6 +177,7 @@ class ScannedRegionFile(object):
         # Information about the region
         self.block_aggregation = [0 for i in xrange(4096)]
         self.containers = []
+        self.biomes = []
 
     def __str__(self):
         text = "Path: {0}".format(self.path)
@@ -203,7 +204,7 @@ class ScannedRegionFile(object):
         return self.corrupted_chunks, self.wrong_located_chunks, self.entities_prob, self.shared_offset, self.count_chunks()
 
     def get_info_containers(self):
-        return self.block_aggregation, self.containers
+        return self.block_aggregation, self.containers, self.biomes
 
     def get_path(self):
         """ Returns the path of the region file. """

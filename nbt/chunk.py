@@ -14,6 +14,11 @@ class Chunk(object):
         self.chunk_data = nbt['Level']
         self.coords = self.chunk_data['xPos'],self.chunk_data['zPos']
         self.blocks = BlockArray(self.chunk_data['Sections'])
+        self.biomes = []
+        if isinstance(self.chunk_data['Biomes'].value, (bytearray, array.array)):
+            self.biomes.extend(list(self.chunk_data['Biomes'].value))
+        else:
+            self.biomes = [0]*256
 
     def get_coords(self):
         """Return the coordinates of this chunk."""
