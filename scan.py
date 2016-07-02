@@ -1126,6 +1126,7 @@ def scan_regionset(regionset, options):
     total_block_aggregation = [0] * 4096
     total_biome_aggregation = [0] * 256
     container_log_file = open('containers.txt', 'w')
+	region_log_file = open('regions.txt', 'w')
 
     while not result.ready() or not q.empty():
         time.sleep(0.01)
@@ -1146,8 +1147,11 @@ def scan_regionset(regionset, options):
                     total_block_aggregation[block_id] += count
                 for line in containers:
                     container_log_file.write(line)
+				region_log_file.write("Region: {0},{1} Biomes:\n".format(r.get_coords()))
                 for biome_id, count in enumerate(biomes):
+					region_log_file.write("  {0} ({1}): {2}".format(BIOME_MAP[biome_id], biome_id, count))
                     total_biome_aggregation[biome_id] += count
+				region_log_file.write("\n")
 
                 # the obj returned is a copy, overwrite it in regionset
                 regionset[r.get_coords()] = r
@@ -1171,6 +1175,7 @@ def scan_regionset(regionset, options):
                 else:
                     pbar.update(region_counter)
     container_log_file.close()
+	region_log_file.close()
 
     # saveBlockStats('world', (0, 0), total_block_aggregation)
     for block_id, count in enumerate(total_block_aggregation):
