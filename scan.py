@@ -1147,12 +1147,12 @@ def scan_regionset(regionset, options):
                     total_block_aggregation[block_id] += count
                 for line in containers:
                     container_log_file.write(line)
-                region_log_file.write("Region: {0},{1} Biomes:\n".format(r.get_coords()))
+                region_log_file.write("Region: {0} Biomes:\n".format(r.get_coords()))
                 for biome_id, count in enumerate(biomes):
                     if biome_id in BIOME_MAP and count > 0:
-                        region_log_file.write("  {0} ({1}): {2}".format(BIOME_MAP[biome_id], biome_id, count))
+                        region_log_file.write("  {0} ({1}): {2}\n".format(BIOME_MAP[biome_id], biome_id, count))
                     elif count > 0:
-                        region_log_file.write("  --- ({0}): {1}".format(biome_id, count))
+                        region_log_file.write("  --- ({0}): {1}\n".format(biome_id, count))
                     total_biome_aggregation[biome_id] += count
                 region_log_file.write("\n")
 
